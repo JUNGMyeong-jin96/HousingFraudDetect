@@ -21,6 +21,8 @@ export interface House {
   addr: string;
   buildingType: BuildingType;
   deposit: string;
+  /** 반전세 매물일 때만 존재. 순수 전세 매물은 생략(undefined). */
+  monthlyRent?: string;
   market: string;
   ratio: string;
   ratioBad: boolean;

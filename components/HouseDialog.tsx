@@ -82,7 +82,7 @@ export default function HouseDialog({ house, answer, allDone, onAnswer, onClose 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
+            gridTemplateColumns: house.monthlyRent ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr",
             borderBottom: "2px solid var(--color-divider)",
           }}
         >
@@ -92,6 +92,14 @@ export default function HouseDialog({ house, answer, allDone, onAnswer, onClose 
             </div>
             <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 21 }}>{house.deposit}</div>
           </div>
+          {house.monthlyRent && (
+            <div style={{ padding: "14px 24px", borderRight: "1px solid var(--color-divider)" }}>
+              <div style={{ fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>
+                월세
+              </div>
+              <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 21 }}>{house.monthlyRent}</div>
+            </div>
+          )}
           <div style={{ padding: "14px 24px", borderRight: "1px solid var(--color-divider)" }}>
             <div style={{ fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>
               시세
