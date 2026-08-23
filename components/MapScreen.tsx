@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   BOARD_HEIGHT,
   BOARD_WIDTH,
-  HOUSES,
   HOUSE_HEIGHT,
   HOUSE_WIDTH,
   LAYOUT,
@@ -13,7 +12,7 @@ import {
   START_POS,
 } from "@/lib/houses";
 import type { Facing } from "@/lib/sprites";
-import type { Answers, PlayerInfo } from "@/lib/types";
+import type { Answers, House, PlayerInfo } from "@/lib/types";
 import HouseDialog from "./HouseDialog";
 import HouseSprite from "./HouseSprite";
 import PlayerSprite from "./PlayerSprite";
@@ -29,12 +28,13 @@ function blocked(x: number, y: number): boolean {
 
 interface MapScreenProps {
   playerInfo: PlayerInfo;
+  houses: House[];
   answers: Answers;
   onAnswer: (index: number, risky: boolean) => void;
   onShowResult: () => void;
 }
 
-export default function MapScreen({ playerInfo, answers, onAnswer, onShowResult }: MapScreenProps) {
+export default function MapScreen({ playerInfo, houses, answers, onAnswer, onShowResult }: MapScreenProps) {
   const posRef = useRef({ ...START_POS });
   const [renderPos, setRenderPos] = useState(START_POS);
   const facingRef = useRef<Facing>("down");
@@ -58,7 +58,12 @@ export default function MapScreen({ playerInfo, answers, onAnswer, onShowResult 
     const i = activeIndexRef.current;
     if (i === null) return;
     const l = LAYOUT[i];
-    const nextPos = { x: l.dx - PLAYER_SIZE / 2, y: Math.min(BOARD_HEIGHT - PLAYER_SIZE - 2, l.dy + 40) };
+    const doorAboveHouse = l.dy < l.y;
+    const y = doorAboveHouse ? l.dy - 40 : l.dy + 40;
+    const nextPos = {
+      x: l.dx - PLAYER_SIZE / 2,
+      y: Math.max(2, Math.min(BOARD_HEIGHT - PLAYER_SIZE - 2, y)),
+    };
     posRef.current = nextPos;
     setRenderPos(nextPos);
     setActive(null);
@@ -129,10 +134,10 @@ export default function MapScreen({ playerInfo, answers, onAnswer, onShowResult 
   }, []);
 
   const answeredCount = Object.keys(answers).length;
-  const correctCount = Object.keys(answers).filter((i) => answers[Number(i)] === HOUSES[Number(i)].risky).length;
-  const allDone = answeredCount === HOUSES.length;
-  const progressPct = (answeredCount / HOUSES.length) * 100;
-  const activeHouse = activeIndex === null ? null : HOUSES[activeIndex];
+  const correctCount = Object.keys(answers).filter((i) => answers[Number(i)] === houses[Number(i)].risky).length;
+  const allDone = answeredCount === houses.length;
+  const progressPct = (answeredCount / houses.length) * 100;
+  const activeHouse = activeIndex === null ? null : houses[activeIndex];
 
   return (
     <div style={{ minHeight: "100vh", paddingBottom: 56 }}>
@@ -221,7 +226,7 @@ export default function MapScreen({ playerInfo, answers, onAnswer, onShowResult 
               중앙 골목
             </div>
 
-            {HOUSES.map((house, i) => {
+            {houses.map((house, i) => {
               const l = LAYOUT[i];
               const done = answers[i] !== undefined;
               const right = done && answers[i] === house.risky;
@@ -346,14 +351,14 @@ export default function MapScreen({ playerInfo, answers, onAnswer, onShowResult 
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--color-neutral-700)", marginBottom: 22 }}>
             <span>{answeredCount}채 점검 완료</span>
-            <span>남은 집 {HOUSES.length - answeredCount}</span>
+            <span>남은 집 {houses.length - answeredCount}</span>
           </div>
 
           <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-neutral-700)", marginBottom: 8 }}>
             점검 기록
           </div>
           <div style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--color-divider)" }}>
-            {HOUSES.map((house, i) => {
+            {houses.map((house, i) => {
               const done = answers[i] !== undefined;
               const ok = done && answers[i] === house.risky;
               return (

@@ -1,20 +1,20 @@
 "use client";
 
-import { HOUSES } from "@/lib/houses";
-import type { Answers, PlayerInfo } from "@/lib/types";
+import type { Answers, House, PlayerInfo } from "@/lib/types";
 import { tagClassFor } from "@/lib/statusTag";
 
 interface ResultScreenProps {
   playerInfo: PlayerInfo;
+  houses: House[];
   answers: Answers;
   onRestart: () => void;
   onBackToMap: () => void;
 }
 
-export default function ResultScreen({ playerInfo, answers, onRestart, onBackToMap }: ResultScreenProps) {
-  const indices = HOUSES.map((_, i) => i);
-  const correctCount = indices.filter((i) => answers[i] === HOUSES[i].risky).length;
-  const wrongIdx = indices.filter((i) => answers[i] !== undefined && answers[i] !== HOUSES[i].risky);
+export default function ResultScreen({ playerInfo, houses, answers, onRestart, onBackToMap }: ResultScreenProps) {
+  const indices = houses.map((_, i) => i);
+  const correctCount = indices.filter((i) => answers[i] === houses[i].risky).length;
+  const wrongIdx = indices.filter((i) => answers[i] !== undefined && answers[i] !== houses[i].risky);
 
   const gradeTitle =
     correctCount === 5
@@ -77,7 +77,7 @@ export default function ResultScreen({ playerInfo, answers, onRestart, onBackToM
             </tr>
           </thead>
           <tbody>
-            {HOUSES.map((house, i) => {
+            {houses.map((house, i) => {
               const m = answers[i];
               const ok = m === house.risky;
               const markText = m === undefined ? "미점검" : ok ? (m ? "위험 ✓" : "안전 ✓") : m ? "위험 ✗" : "안전 ✗";
@@ -109,7 +109,7 @@ export default function ResultScreen({ playerInfo, answers, onRestart, onBackToM
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
               {wrongIdx.map((i) => {
-                const house = HOUSES[i];
+                const house = houses[i];
                 return (
                   <div key={house.num} className="card" style={{ borderLeft: "4px solid var(--color-accent)" }}>
                     <div className="card-kicker">{house.risky ? "위험한 집을 안전하다고 판정" : "안전한 집을 위험하다고 판정"}</div>
