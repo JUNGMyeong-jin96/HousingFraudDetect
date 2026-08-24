@@ -34,16 +34,7 @@ export default function ResultScreen({ playerInfo, houses, answers, onRestart, o
 
   return (
     <div style={{ minHeight: "100vh", paddingBottom: 56 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 24,
-          padding: "14px 32px",
-          borderBottom: "2px solid var(--color-divider)",
-        }}
-      >
+      <div className="game-header">
         <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
           <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>
             전세사기 위험 점검 훈련

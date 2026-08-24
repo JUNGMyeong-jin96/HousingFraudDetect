@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import {
   BOARD_HEIGHT,
   BOARD_WIDTH,
@@ -42,6 +42,21 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
   const keysRef = useRef<Record<string, boolean>>({});
   const activeIndexRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndexState] = useState<number | null>(null);
+  const boardWrapRef = useRef<HTMLDivElement>(null);
+  const [boardScale, setBoardScale] = useState(1);
+
+  function dpadPress(key: string) {
+    return (e: ReactPointerEvent<HTMLButtonElement>) => {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      keysRef.current[key] = true;
+    };
+  }
+
+  function dpadRelease(key: string) {
+    return () => {
+      keysRef.current[key] = false;
+    };
+  }
 
   function setActive(i: number | null) {
     activeIndexRef.current = i;
@@ -133,6 +148,19 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const el = boardWrapRef.current;
+    if (!el) return;
+    function update() {
+      const w = el!.clientWidth;
+      setBoardScale(w > 0 ? Math.min(1, w / BOARD_WIDTH) : 1);
+    }
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const answeredCount = Object.keys(answers).length;
   const correctCount = Object.keys(answers).filter((i) => answers[Number(i)] === houses[Number(i)].risky).length;
   const allDone = answeredCount === houses.length;
@@ -141,16 +169,7 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
 
   return (
     <div style={{ minHeight: "100vh", paddingBottom: 56 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 24,
-          padding: "14px 32px",
-          borderBottom: "2px solid var(--color-divider)",
-        }}
-      >
+      <div className="game-header">
         <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
           <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>
             전세사기 위험 점검 훈련
@@ -169,7 +188,7 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
         </div>
       </div>
 
-      <div style={{ maxWidth: 1140, margin: "0 auto", padding: "26px 32px 0", display: "grid", gridTemplateColumns: "minmax(0,1fr) 300px", gap: 34, alignItems: "start" }}>
+      <div className="map-shell">
         <div style={{ minWidth: 0 }}>
           <h1 style={{ fontSize: 33, margin: "0 0 6px", letterSpacing: "-0.02em" }}>골목을 돌며 5채를 점검하세요</h1>
           <p className="text-muted" style={{ maxWidth: "58ch", margin: "0 0 18px" }}>
@@ -178,11 +197,16 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
           </p>
 
           <div
+            ref={boardWrapRef}
+            style={{ width: "100%", maxWidth: BOARD_WIDTH, height: BOARD_HEIGHT * boardScale, overflow: "hidden" }}
+          >
+          <div
             style={{
               position: "relative",
               width: BOARD_WIDTH,
               height: BOARD_HEIGHT,
-              maxWidth: "100%",
+              transform: `scale(${boardScale})`,
+              transformOrigin: "top left",
               border: "2px solid var(--color-divider)",
               background: "var(--color-surface)",
               overflow: "hidden",
@@ -334,11 +358,63 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
               <PlayerSprite facing={facing} width={PLAYER_SPRITE_WIDTH} height={PLAYER_SPRITE_HEIGHT} />
             </div>
           </div>
+          </div>
 
           <div style={{ display: "flex", gap: 22, marginTop: 12, fontSize: 12, color: "var(--color-neutral-700)", flexWrap: "wrap" }}>
             <span>↑ ↓ ← → / WASD — 이동</span>
             <span>붉은 문에 서면 자동 입장</span>
             <span>집을 클릭해도 입장</span>
+          </div>
+
+          <div className="touch-dpad">
+            <button
+              type="button"
+              className="dpad-btn"
+              aria-label="위로 이동"
+              style={{ gridColumn: 2, gridRow: 1 }}
+              onPointerDown={dpadPress("arrowup")}
+              onPointerUp={dpadRelease("arrowup")}
+              onPointerCancel={dpadRelease("arrowup")}
+              onPointerLeave={dpadRelease("arrowup")}
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              className="dpad-btn"
+              aria-label="왼쪽으로 이동"
+              style={{ gridColumn: 1, gridRow: 2 }}
+              onPointerDown={dpadPress("arrowleft")}
+              onPointerUp={dpadRelease("arrowleft")}
+              onPointerCancel={dpadRelease("arrowleft")}
+              onPointerLeave={dpadRelease("arrowleft")}
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              className="dpad-btn"
+              aria-label="오른쪽으로 이동"
+              style={{ gridColumn: 3, gridRow: 2 }}
+              onPointerDown={dpadPress("arrowright")}
+              onPointerUp={dpadRelease("arrowright")}
+              onPointerCancel={dpadRelease("arrowright")}
+              onPointerLeave={dpadRelease("arrowright")}
+            >
+              ▶
+            </button>
+            <button
+              type="button"
+              className="dpad-btn"
+              aria-label="아래로 이동"
+              style={{ gridColumn: 2, gridRow: 3 }}
+              onPointerDown={dpadPress("arrowdown")}
+              onPointerUp={dpadRelease("arrowdown")}
+              onPointerCancel={dpadRelease("arrowdown")}
+              onPointerLeave={dpadRelease("arrowdown")}
+            >
+              ▼
+            </button>
           </div>
         </div>
 
@@ -374,7 +450,7 @@ export default function MapScreen({ playerInfo, houses, answers, onAnswer, onSho
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
-                    <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 11, color: "var(--color-neutral-600)", width: 13 }}>
+                    <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 11, color: "var(--color-neutral-600)", minWidth: 13, whiteSpace: "nowrap" }}>
                       {house.num}
                     </span>
                     <span style={{ fontSize: 12.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{house.short}</span>

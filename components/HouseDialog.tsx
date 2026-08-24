@@ -125,18 +125,9 @@ export default function HouseDialog({ house, answer, allDone, onAnswer, onClose 
 
         <div style={{ padding: "0 24px" }}>
           {house.fields.map(([label, value, status]) => (
-            <div
-              key={label}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "150px minmax(0,1fr) 74px",
-                gap: 14,
-                alignItems: "baseline",
-                padding: "12px 0",
-                borderBottom: "1px solid var(--color-divider)",
-              }}
-            >
+            <div key={label} className="field-row">
               <div
+                className="field-row-label"
                 style={{
                   fontSize: 11.5,
                   letterSpacing: "0.02em",
@@ -147,8 +138,10 @@ export default function HouseDialog({ house, answer, allDone, onAnswer, onClose 
               >
                 {label}
               </div>
-              <div style={{ fontSize: 13.5, textWrap: "pretty" }}>{value}</div>
-              <div style={{ textAlign: "right" }}>
+              <div className="field-row-value" style={{ fontSize: 13.5, textWrap: "pretty" }}>
+                {value}
+              </div>
+              <div className="field-row-status" style={{ textAlign: "right" }}>
                 {revealed && <span className={tagClassFor(status)}>{status}</span>}
               </div>
             </div>
